@@ -1,18 +1,15 @@
-package service;
+package entities;
+
+import java.sql.Date;
 
 public class Categoria {
 	private String idCategoria;
 	private String nomeCategoria;
 	private String descricaoCategoria;
-	private String dataCriacaoCategoria;
-	
-	public static void main(String[] args) {
-		
-	}
-	
+	private Date dataCriacaoCategoria;
 	
 
-	public Categoria(String idCategoria, String nomeCategoria, String descricaoCategoria, String dataCriacaoCategoria) {
+	public Categoria(String idCategoria, String nomeCategoria, String descricaoCategoria, Date dataCriacaoCategoria) {
 		super();
 		this.idCategoria = idCategoria;
 		this.nomeCategoria = nomeCategoria;
@@ -44,11 +41,11 @@ public class Categoria {
 		this.descricaoCategoria = descricaoCategoria;
 	}
 
-	public String getDataCriacaoCategoria() {
+	public Date getDataCriacaoCategoria() {
 		return dataCriacaoCategoria;
 	}
 
-	public void setDataCriacaoCategoria(String dataCriacaoCategoria) {
+	public void setDataCriacaoCategoria(Date dataCriacaoCategoria) {
 		this.dataCriacaoCategoria = dataCriacaoCategoria;
 	}
 }

@@ -1,4 +1,4 @@
-package service;
+package entities;
 
 public class Usuario {
 	
@@ -9,12 +9,10 @@ public class Usuario {
 	private String senhaUsuario;
 	private String dataCriacaoUsuario;
 	
-	public static void main(String[] args) {
+	public Usuario() {
 		
 	}
 	
-	
-
 	public Usuario(String idUsuario, String nomeUsuario, String rAUsuario, String setorUsuario, String senhaUsuario,
 			String dataCriacaoUsuario) {
 		super();

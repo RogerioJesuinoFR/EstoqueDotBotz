@@ -11,30 +11,21 @@ import java.util.Properties;
 
 
 public class BancoDados {
-
-	private static Connection conn = null;
 	
 	public static Connection conectar() throws SQLException, IOException {
-			
-		if (conn == null) {
-			
+				
 			Properties props = carregarPropriedades();
 			String url = props.getProperty("dburl");
-			conn = DriverManager.getConnection(url, props);
-		}
 		
-		return conn;
+		return DriverManager.getConnection(url, props);
 	}
 	
-	public static Connection desconectar() throws SQLException {
-		
-		if (conn != null) {
-			
-			conn.close();
-			conn = null;
-		}
-		
-		return conn;
+	public static void desconectar(Connection conn) throws SQLException {
+	    
+	    if (conn != null) {
+	        
+	        conn.close();
+	    }
 	}
 	
 	private static Properties carregarPropriedades() throws IOException {

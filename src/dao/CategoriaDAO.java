@@ -1,5 +1,10 @@
 package dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
+import entities.Categoria;
+
 public class CategoriaDAO {
 	
 	private Connection conn;
@@ -9,9 +14,25 @@ public class CategoriaDAO {
 		this.conn = conn;
 	}
 	
-	public String cadastrar(Categoria categoria) throws SQLException {
+	public int cadastrar(Categoria categoria) throws SQLException {
 		
-		return null;
+		PreparedStatement st = null;
+		
+		try {
+			
+			st = conn.prepareStatement("Insert into categorias (nome, descricao, data_criacao values (?, ?, ?)");
+			
+			st.setString(1, categoria.getNomeCategoria());
+			st.setString(2, categoria.getDescricaoCategoria());
+			st.setDate(3, categoria.getDataCriacaoCategoria());
+			
+			return st.executeUpdate();
+			
+		} finally {
+			
+			BancoDados.finalizarStatement(st);
+			BancoDados.desconectar();
+		}
 	}
 	
 	public List<Categoria> buscarTodos() throws SQLException {

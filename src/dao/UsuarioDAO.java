@@ -1,6 +1,11 @@
 package dao;
 
-import service.Usuario;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List; 
+
+import entities.Usuario;
 
 public class UsuarioDAO {
 
@@ -11,7 +16,7 @@ public class UsuarioDAO {
 		this.conn = conn;
 	}
 	
-	public String cadastrar(Usuario usuario) throws SQLException {
+	public int cadastrar(Usuario usuario) throws SQLException {
 		
 		PreparedStatement st = null;
 		
@@ -25,11 +30,12 @@ public class UsuarioDAO {
 			st.setString(4, usuario.getSenhaUsuario());
 			st.setString(5, usuario.getDataCriacaoUsuario());
 			
-			return st.executeUpdate();
+			int linhasAfetadas = st.executeUpdate();			
+			return linhasAfetadas;
+			
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
 		}
 	}
 	
