@@ -1,6 +1,5 @@
 package entities;
 
-import java.sql.Date;
 
 public class Item {
 	private String idItem;
@@ -10,13 +9,18 @@ public class Item {
 	private int quantidadeAtualItem;
 	private int quantidadeMinimaItem;
 	private String unidadeMedidaItem;
-	private Date validadeItem;
+	private String validadeItem;
 	private String setorItem;
-	private Date dataCriacaoItem;
+	private String dataCriacaoItem;
 	
-		public Item(String idItem, String nomeItem, Categoria categoria, String descricaoItem, int quantidadeAtualItem,
-			int quantidadeMinimaItem, String unidadeMedidaItem, Date validadeItem, String setorItem,
-			Date dataCriacaoItem) {
+	
+	public Item() {
+		
+	}
+	
+	public Item(String idItem, String nomeItem, Categoria categoria, String descricaoItem, int quantidadeAtualItem,
+			int quantidadeMinimaItem, String unidadeMedidaItem, String validadeItem, String setorItem,
+			String dataCriacaoItem) {
 		super();
 		this.idItem = idItem;
 		this.nomeItem = nomeItem;
@@ -86,11 +90,11 @@ public class Item {
 		this.unidadeMedidaItem = unidadeMedidaItem;
 	}
 
-	public Date getValidadeItem() {
+	public String getValidadeItem() {
 		return validadeItem;
 	}
 
-	public void setValidadeItem(Date validadeItem) {
+	public void setValidadeItem(String validadeItem) {
 		this.validadeItem = validadeItem;
 	}
 
@@ -102,11 +106,11 @@ public class Item {
 		this.setorItem = setorItem;
 	}
 
-	public Date getDataCriacaoItem() {
+	public String getDataCriacaoItem() {
 		return dataCriacaoItem;
 	}
 
-	public void setDataCriacaoItem(Date dataCriacaoItem) {
+	public void setDataCriacaoItem(String dataCriacaoItem) {
 		this.dataCriacaoItem = dataCriacaoItem;
 	}
 }
