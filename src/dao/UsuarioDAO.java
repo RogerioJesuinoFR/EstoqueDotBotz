@@ -138,8 +138,22 @@ public class UsuarioDAO {
 		}
 	}
 	
-	public String excluir(int ra) throws SQLException {
+	public int excluir(String id) throws SQLException {
 		
-		return null;
+		PreparedStatement st = null;
+		
+		try {
+			
+			st = conn.prepareStatement("delete from usuarios where id_usuario = ?");
+			
+			st.setString(1, id);
+			
+			return st.executeUpdate();
+			
+		} finally {
+			
+			BancoDados.finalizarStatement(st);
+			BancoDados.desconectar();
+		}
 	}
 }

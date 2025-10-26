@@ -154,8 +154,22 @@ public class ItemDAO {
 		}
 	}
 	
-	public String excluir(String nome) throws SQLException {
+	public int excluir(String id) throws SQLException {
 		
-		return 0;
+		PreparedStatement st = null;
+		
+		try {
+			
+			st = conn.prepareStatement("delete from itens where id_item = ?");
+			
+			st.setString(1, id);
+			
+			return st.executeUpdate();
+			
+		} finally {
+			
+			BancoDados.finalizarStatement(st);
+			BancoDados.desconectar();
+		}
 	}
 }

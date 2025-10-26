@@ -24,11 +24,12 @@ public class CategoriaDAO {
 		
 		try {
 			
-			st = conn.prepareStatement("Insert into categorias (nome, descricao, data_criacao) values (?, ?, ?)");
+			st = conn.prepareStatement("Insert into categorias (id_cateogria, nome, descricao, data_criacao) values ?, ?, ?, ?)");
 			
-			st.setString(1, categoria.getNomeCategoria());
-			st.setString(2, categoria.getDescricaoCategoria());
-			st.setString(3, categoria.getDataCriacaoCategoria());
+			st.setString(1, categoria.getIdCategoria());
+			st.setString(2, categoria.getNomeCategoria());
+			st.setString(3, categoria.getDescricaoCategoria());
+			st.setString(4, categoria.getDataCriacaoCategoria());
 			
 			return st.executeUpdate();
 			
@@ -105,13 +106,44 @@ public class CategoriaDAO {
 		}
 	}
 	
-	public String atualizar(Categoria categoria) throws SQLException {
+	public int atualizar(Categoria categoria) throws SQLException {
 		
-		return null;
+		PreparedStatement st = null;
+		
+		try {
+			
+			st = conn.prepareStatement("update categorias set nome = ?, descricao = ?, data_criacao = ? where idCategoria = ?");
+			
+			st.setString(1, categoria.getNomeCategoria());
+			st.setString(2, categoria.getDescricaoCategoria());
+			st.setString(3, categoria.getDataCriacaoCategoria());
+			st.setString(4, categoria.getIdCategoria());
+			
+			return st.executeUpdate();
+			
+		} finally {
+			
+			BancoDados.finalizarStatement(st);
+			BancoDados.desconectar();
+		}
 	}
 	
-	public String excluir(String nome) throws SQLException {
+	public int excluir(String id) throws SQLException {
 		
-		return 0;
+		PreparedStatement st = null;
+		
+		try {
+			
+			st = conn.prepareStatement("delete from categorias where id_categoria = ?");
+			
+			st.setString(1, id);
+			
+			return st.executeUpdate();
+			
+		} finally {
+			
+			BancoDados.finalizarStatement(st);
+			BancoDados.desconectar();
+		}
 	}
 }
