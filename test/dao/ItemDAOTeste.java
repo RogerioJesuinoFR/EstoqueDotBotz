@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-
 import entities.Categoria;
 import entities.Item;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class ItemDAOTeste {
 
@@ -15,7 +16,7 @@ public class ItemDAOTeste {
 		
 		Item item = new Item();
 		item.setNomeItem("Parafuso");
-		item.setCategoria("Itens pequenos");
+		item.setIdCategoria("1");
 		item.setDescricaoItem("Parafusos de aço");
 		item.setQuantidadeAtualItem(0);
 		item.setQuantidadeMinimaItem(10);
@@ -24,19 +25,35 @@ public class ItemDAOTeste {
 		item.setSetorItem("Autonomos");
 		item.setDataCriacaoItem("22-10-2025");
 		
-		Connection conn = BancoDados.conectar();
-		int resultado = new ItemDAO(conn).cadastrar(item);
+		Connection conn = null;
 		
-		assertEquals(1, resultado);
+		try {
+			
+			conn = BancoDados.conectar();
+			int resultado = new ItemDAO(conn).cadastrar(item);
+			
+			assertEquals(1, resultado);
+		} finally {
+			
+			BancoDados.desconectar(conn);
+		}		
 	}
 	
 	@Test
 	void buscarTodosItensTeste() throws SQLException, IOException {
 		
-		Connection conn = BancoDados.conectar();
-		List<Item> listaItens = new ItemDAO(conn).buscarTodos();
+		Connection conn = null;
 		
-		assertNotNull(listaItens);
+		try {
+			
+			conn = BancoDados.conectar();
+			List<Item> listaItens = new ItemDAO(conn).buscarTodos();
+			
+			assertNotNull(listaItens);
+		} finally {
+			
+			BancoDados.desconectar(conn);
+		}
 	}
 	
 	@Test
@@ -44,20 +61,29 @@ public class ItemDAOTeste {
 		
 		String nome = "Parafusos";
 		
-		Connection conn = BancoDados.conectar();
-		Item item = new ItemDAO(conn).buscarPorNome(nome);
-		
-		assertNotNull(item);
-		assertEquals("Parafusos", item.getNomeItem());
+		Connection conn = null;
+		try {
+			
+			conn = BancoDados.conectar();
+			Item item = new ItemDAO(conn).buscarPorNome(nome);
+			
+			assertNotNull(item);
+			assertEquals("Parafusos", item.getNomeItem());
+			
+		} finally {
+			
+			BancoDados.desconectar(conn);
+		}
 	}
 	
 	@Test
 	void atualizarItemTeste() throws SQLException, IOException {
 		
 		Item item = new Item ();
-		item.setNomeItem("");
-		item.setCategoria("Itens médios");
-		item.setDescricaoItem("");
+		item.setIdItem("1");
+		item.setNomeItem("Parafusos de 3/4");
+		item.setIdCategoria("1");
+		item.setDescricaoItem("Parafusos de tamanho 3/4");
 		item.setQuantidadeAtualItem(10);
 		item.setQuantidadeMinimaItem(10);
 		item.setUnidadeMedidaItem("Unidades");
@@ -65,10 +91,19 @@ public class ItemDAOTeste {
 		item.setSetorItem("Combate");
 		item.setDataCriacaoItem("2-10-2025");
 		
-		Connection conn = BancoDados.conectar();
-		int resultado = new ItemDAO(conn).atualizar(item);
+		Connection conn = null;
+		try {
+			
+			conn = BancoDados.conectar();
+			int resultado = new ItemDAO(conn).atualizar(item);
+			
+			assertEquals(1, resultado);
+			
+		} finally {
+			
+			BancoDados.desconectar(conn);
+		}
 		
-		assertEquals(1, resultado);
 	}
 	
 	@Test
@@ -76,9 +111,17 @@ public class ItemDAOTeste {
 		
 		String id_item = "1";
 		
-		Connection conn = BancoDados.conectar();
-		int resultado = new ItemDAO(conn).excluir(id_item);
+		Connection conn = null;
+		try {
+			
+			conn = BancoDados.conectar();
+			int resultado = new ItemDAO(conn).excluir(id_item);
+			
+			assertEquals(1, resultado);
+		} finally {
+			
+			BancoDados.desconectar(conn);
+		}
 		
-		assertEquals(1, resultado);
 	}
 }

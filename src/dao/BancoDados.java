@@ -20,11 +20,18 @@ public class BancoDados {
 		return DriverManager.getConnection(url, props);
 	}
 	
-	public static void desconectar(Connection conn) throws SQLException {
+	public static void desconectar(Connection conn) {
 	    
 	    if (conn != null) {
 	        
-	        conn.close();
+	        try {
+	        	
+	        	conn.close();
+	        	
+	        } catch (SQLException e) {
+	        	
+	        	System.err.println("Erro ao fechar a conexão: " + e.getMessage());
+	        }
 	    }
 	}
 	

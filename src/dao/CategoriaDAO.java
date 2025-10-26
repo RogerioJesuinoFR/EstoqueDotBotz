@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import entities.Categoria;
 
 public class CategoriaDAO {
@@ -24,19 +23,18 @@ public class CategoriaDAO {
 		
 		try {
 			
-			st = conn.prepareStatement("Insert into categorias (id_cateogria, nome, descricao, data_criacao) values ?, ?, ?, ?)");
+			st = conn.prepareStatement("Insert into categorias (nome, descricao, data_criacao) values (?, ?, ?)");
 			
-			st.setString(1, categoria.getIdCategoria());
-			st.setString(2, categoria.getNomeCategoria());
-			st.setString(3, categoria.getDescricaoCategoria());
-			st.setString(4, categoria.getDataCriacaoCategoria());
+			st.setString(1, categoria.getNomeCategoria());
+			st.setString(2, categoria.getDescricaoCategoria());
+			st.setString(3, categoria.getDataCriacaoCategoria());
 			
 			return st.executeUpdate();
 			
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -69,13 +67,13 @@ public class CategoriaDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
 	public Categoria buscarPorNome(String nome) throws SQLException {
 		
-		PrepareStatement st = null;
+		PreparedStatement st = null;
 		ResultSet rs = null;
 		
 		try {
@@ -102,7 +100,7 @@ public class CategoriaDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -112,7 +110,7 @@ public class CategoriaDAO {
 		
 		try {
 			
-			st = conn.prepareStatement("update categorias set nome = ?, descricao = ?, data_criacao = ? where idCategoria = ?");
+			st = conn.prepareStatement("update categorias set nome = ?, descricao = ?, data_criacao = ? where id_categoria = ?");
 			
 			st.setString(1, categoria.getNomeCategoria());
 			st.setString(2, categoria.getDescricaoCategoria());
@@ -124,7 +122,7 @@ public class CategoriaDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -143,7 +141,7 @@ public class CategoriaDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 }

@@ -50,12 +50,12 @@ public class Item {
 		this.nomeItem = nomeItem;
 	}
 
-	public Categoria getCategoria() {
-		return categoria;
+	public String getCategoria() {
+		return categoria.getIdCategoria();
 	}
 
-	public void setCategoria(Categoria categoria) {
-		this.categoria = categoria;
+	public void setCategoria(String idCategoria) {
+		this.categoria.setIdCategoria(idCategoria);
 	}
 
 	public String getDescricaoItem() {

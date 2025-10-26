@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import entities.Item;
 import entities.Usuario;
 
 public class UsuarioDAO {
@@ -50,7 +48,7 @@ public class UsuarioDAO {
 		
 		try {
 			
-			st = conn.prepareStatement("select * from usuarios order by nomeUsuario");
+			st = conn.prepareStatement("select * from usuarios order by nome");
 			
 			rs = st.executeQuery();
 			
@@ -75,18 +73,18 @@ public class UsuarioDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
 	public Usuario buscarPorRA(String ra) throws SQLException {
 		
-		PrepareStatement st = null;
+		PreparedStatement st = null;
 		ResultSet rs = null;
 		
 		try {
 			
-			st = conn.prepareStatement("select * from usuarios where RAUsuario = ?");
+			st = conn.prepareStatement("select * from usuarios where ra = ?");
 			
 			st.setString(1, ra);
 			
@@ -111,11 +109,11 @@ public class UsuarioDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
-	public String atualizar(Usuario usuario) throws SQLException {
+	public int atualizar(Usuario usuario) throws SQLException {
 		
 		PreparedStatement st = null;
 		
@@ -134,7 +132,7 @@ public class UsuarioDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -153,7 +151,7 @@ public class UsuarioDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 }

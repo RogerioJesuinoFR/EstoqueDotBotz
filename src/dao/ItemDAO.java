@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import entities.Item;
 
 public class ItemDAO {
@@ -28,7 +27,7 @@ public class ItemDAO {
 			
 			st.setString(1, item.getIdItem());
 			st.setString(2, item.getNomeItem());
-			st.setObject(3, item.getCategoria());
+			st.setString(3, item.getCategoria());
 			st.setString(4, item.getDescricaoItem());
 			st.setInt(5, item.getQuantidadeAtualItem());
 			st.setInt(6, item.getQuantidadeMinimaItem());
@@ -42,7 +41,7 @@ public class ItemDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -64,7 +63,7 @@ public class ItemDAO {
 				Item item = new Item();
 				
 				item.setNomeItem(rs.getString("nome"));
-				item.setCategoria(rs.getObject("id_categoria"));
+				item.setCategoria(rs.getString("id_categoria"));
 				item.setDescricaoItem(rs.getString("descricao"));
 				item.setQuantidadeAtualItem(rs.getInt("quantidade_atual"));
 				item.setQuantidadeMinimaItem(rs.getInt("quantidade_minima"));
@@ -82,13 +81,13 @@ public class ItemDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
 	public Item buscarPorNome(String nome) throws SQLException {
 		
-		PrepareStatement st = null;
+		PreparedStatement st = null;
 		ResultSet rs = null;
 		
 		try {
@@ -104,7 +103,7 @@ public class ItemDAO {
 				Item item = new Item();
 				
 				item.setNomeItem(rs.getString("nome"));
-				item.setCategoria(rs.getObject("id_categoria"));
+				item.setCategoria(rs.getString("id_categoria"));
 				item.setDescricaoItem(rs.getString("descricao"));
 				item.setQuantidadeAtualItem(rs.getInt("quantidade_atual"));
 				item.setQuantidadeMinimaItem(rs.getInt("quantidade_minima"));
@@ -122,7 +121,7 @@ public class ItemDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -150,7 +149,7 @@ public class ItemDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 	
@@ -169,7 +168,7 @@ public class ItemDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar();
+			BancoDados.desconectar(conn);
 		}
 	}
 }
