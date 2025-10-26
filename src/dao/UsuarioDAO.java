@@ -58,11 +58,12 @@ public class UsuarioDAO {
 				
 				Usuario usuario = new Usuario();
 				
-				usuario.setNomeUsuario(rs.getString("nomeUsuario"));
-				usuario.setRAUsuario(rs.getString("RAUsuario"));
-				usuario.setSetorUsuario(rs.getString("setorUsuario"));
-				usuario.setSenhaUsuario(rs.getString("senhaUsuario"));
-				usuario.setDataCriacaoUsuario(rs.getString("dataCriacaoUsuario"));
+				usuario.setIdUsuario(rs.getString("id_usuario"));
+				usuario.setNomeUsuario(rs.getString("nome"));
+				usuario.setRAUsuario(rs.getString("ra"));
+				usuario.setSetorUsuario(rs.getString("setor"));
+				usuario.setSenhaUsuario(rs.getString("senha"));
+				usuario.setDataCriacaoUsuario(rs.getString("data_criacao"));
 				
 				listaUsuarios.add(usuario);
 			}
@@ -94,11 +95,12 @@ public class UsuarioDAO {
 				
 				Usuario usuario = new Usuario();
 				
-				usuario.setNomeUsuario(rs.getString("nomeUsuario"));
-				usuario.setRAUsuario(rs.getString("RAUsuario"));
-				usuario.setSetorUsuario(rs.getString("setorUsuario"));
-				usuario.setSenhaUsuario(rs.getString("senhaUsuario"));
-				usuario.setDataCriacaoUsuario(rs.getString("dataCriacaoUsuario"));
+				usuario.setIdUsuario(rs.getString("id_usuario"));
+				usuario.setNomeUsuario(rs.getString("nome"));
+				usuario.setRAUsuario(rs.getString("ra"));
+				usuario.setSetorUsuario(rs.getString("setor"));
+				usuario.setSenhaUsuario(rs.getString("senha"));
+				usuario.setDataCriacaoUsuario(rs.getString("data_criacao"));
 				
 				return usuario;
 			}

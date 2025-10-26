@@ -16,6 +16,7 @@ public class Item {
 	
 	public Item() {
 		
+		this.categoria = new Categoria();
 	}
 	
 	public Item(String idItem, String nomeItem, Categoria categoria, String descricaoItem, int quantidadeAtualItem,

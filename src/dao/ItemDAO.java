@@ -62,6 +62,7 @@ public class ItemDAO {
 				
 				Item item = new Item();
 				
+				item.setIdItem(rs.getString("id_item"));
 				item.setNomeItem(rs.getString("nome"));
 				item.setCategoria(rs.getString("id_categoria"));
 				item.setDescricaoItem(rs.getString("descricao"));
@@ -102,6 +103,7 @@ public class ItemDAO {
 				
 				Item item = new Item();
 				
+				item.setIdItem(rs.getString("id_item"));
 				item.setNomeItem(rs.getString("nome"));
 				item.setCategoria(rs.getString("id_categoria"));
 				item.setDescricaoItem(rs.getString("descricao"));
@@ -134,7 +136,7 @@ public class ItemDAO {
 			st = conn.prepareStatement("update itens set nome = ?, id_categoria = ?, descricao = ?, quantidade_atual = ?, quantidade_minima = ?, unidade_medida = ?, validade = ?, setor = ?, data_criacao = ? where id_item = ?");
 						
 			st.setString(1, item.getNomeItem());
-			st.setObject(2, item.getCategoria());
+			st.setString(2, item.getCategoria());
 			st.setString(3, item.getDescricaoItem());
 			st.setInt(4, item.getQuantidadeAtualItem());
 			st.setInt(5, item.getQuantidadeMinimaItem());

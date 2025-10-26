@@ -55,6 +55,7 @@ public class CategoriaDAO {
 				
 				Categoria categoria = new Categoria();
 				
+				categoria.setIdCategoria(rs.getString("id_categoria"));
 				categoria.setNomeCategoria(rs.getString("nome"));
 				categoria.setDescricaoCategoria(rs.getString("descricao"));
 				categoria.setDataCriacaoCategoria(rs.getString("data_criacao"));
@@ -87,6 +88,7 @@ public class CategoriaDAO {
 				
 				Categoria categoria = new Categoria();
 				
+				categoria.setIdCategoria(rs.getString("id_categoria"));
 				categoria.setNomeCategoria(rs.getString("nome"));
 				categoria.setDescricaoCategoria(rs.getString("descricao"));
 				categoria.setDataCriacaoCategoria(rs.getString("data_criacao"));
