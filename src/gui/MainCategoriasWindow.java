@@ -1,0 +1,144 @@
+package gui;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+public class MainCategoriasWindow extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+    private JTable categoriaTable;
+    private String userProfile;
+
+    public MainCategoriasWindow(String profile) {
+        this.userProfile = profile;
+        
+        setTitle("EstoqueDotBotz - Gerenciar Categorias (Perfil: " + userProfile + ")");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // TELA CHEIA
+        
+        Color CLR_FUNDO_ESCURO = new Color(51, 51, 51);
+        
+        setJMenuBar(createMenuBar());
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout(10, 10)); 
+        mainPanel.setBackground(CLR_FUNDO_ESCURO);
+        
+        mainPanel.add(createCategoriaPanel(CLR_FUNDO_ESCURO), BorderLayout.CENTER);
+        mainPanel.add(createActionButtonsPanel(CLR_FUNDO_ESCURO), BorderLayout.SOUTH);
+        
+        setContentPane(mainPanel);
+    }
+
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar(); menuBar.setBackground(new Color(30, 30, 30)); 
+        JMenu menuNav = new JMenu("Navegação"); menuNav.setForeground(Color.WHITE); menuNav.setFont(new Font("Tahoma", Font.BOLD, 12));
+        JMenu menuSair = new JMenu("Sair"); menuSair.setForeground(Color.WHITE);
+        
+        // LIGAÇÃO: CATEGORIAS -> MAIN (ITENS)
+        JMenuItem itemItens = new JMenuItem("Voltar para Itens do Estoque");
+        itemItens.addActionListener(e -> {
+            MainWindow mainFrame = new MainWindow(new String[]{"Ferramentas", "Armas"}, userProfile);
+            mainFrame.setVisible(true);
+            dispose();
+        });
+        menuNav.add(itemItens);
+
+        // LIGAÇÃO: LOGOUT
+        JMenuItem itemSair = new JMenuItem("Logout");
+        itemSair.addActionListener(e -> { new LoginWindow().setVisible(true); dispose(); });
+        menuSair.add(itemSair);
+        
+        menuBar.add(menuNav);
+        menuBar.add(menuSair);
+        return menuBar;
+    }
+
+    private JPanel createCategoriaPanel(Color fundo) {
+        JPanel panel = new JPanel(new BorderLayout()); panel.setBackground(fundo);
+        
+        String[] columnNames = {"ID", "Nome da Categoria", "Setor de Acesso"};
+        Object[][] data = { {1, "Ferramentas Manuais", "Autônomos"}, {2, "Armas de Longo Alcance", "Combate"}, {3, "Equipamentos de Segurança", "Ambos"} };
+        
+        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+            public boolean isCellEditable(int row, int column) { return false; }
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) return Integer.class;
+                return super.getColumnClass(columnIndex);
+            }
+        };
+        categoriaTable = new JTable(model);
+        
+        categoriaTable.setBackground(new Color(60, 60, 60)); categoriaTable.setForeground(Color.WHITE); 
+        categoriaTable.getTableHeader().setBackground(new Color(40, 40, 40)); categoriaTable.getTableHeader().setForeground(Color.WHITE);
+        
+        panel.add(new JScrollPane(categoriaTable), BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createActionButtonsPanel(Color fundo) {
+        JPanel panel = new JPanel(); panel.setBackground(fundo);
+        
+        Color CLR_ADICIONAR = new Color(51, 153, 255);
+        Color CLR_EDITAR = new Color(255, 165, 0);
+        Color CLR_REMOVER = new Color(200, 50, 50);
+        Font FNT_BUTTON = new Font("Tahoma", Font.BOLD, 12);
+        
+        JButton btnAdicionar = createActionButton("Adicionar Nova Categoria", CLR_ADICIONAR, Color.WHITE, FNT_BUTTON);
+        JButton btnEditar = createActionButton("Editar Categoria", CLR_EDITAR, Color.WHITE, FNT_BUTTON);
+        JButton btnRemover = createActionButton("Remover Categoria", CLR_REMOVER, Color.WHITE, FNT_BUTTON);
+        
+        // 5. LIGAÇÃO: MAIN -> CADASTRO DE CATEGORIAS
+        btnAdicionar.addActionListener(e -> {
+            new CategoriaCadastroWindow(userProfile).setVisible(true);
+        });
+
+        // 6. LIGAÇÃO: MAIN -> EDIÇÃO DE CATEGORIAS
+        btnEditar.addActionListener(e -> {
+            int selectedRow = categoriaTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int categoriaId = (int) categoriaTable.getModel().getValueAt(selectedRow, 0);
+                new CategoriaEdicaoWindow(categoriaId, userProfile).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione uma categoria para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        // 7. AÇÃO: REMOÇÃO DE CATEGORIAS
+        btnRemover.addActionListener(e -> {
+            int selectedRow = categoriaTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int categoriaId = (int) categoriaTable.getModel().getValueAt(selectedRow, 0);
+                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja remover a Categoria ID: " + categoriaId + "?", "Confirmação", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    JOptionPane.showMessageDialog(this, "Categoria ID " + categoriaId + " removida (Simulação).", "Remoção", JOptionPane.INFORMATION_MESSAGE);
+                    ((DefaultTableModel)categoriaTable.getModel()).removeRow(selectedRow);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione uma categoria para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        panel.add(btnAdicionar); panel.add(btnEditar); panel.add(btnRemover);
+        return panel;
+    }
+    
+    private JButton createActionButton(String text, Color background, Color foreground, Font font) {
+        JButton button = new JButton(text);
+        button.setFont(font); button.setForeground(foreground); button.setBackground(background);
+        button.setOpaque(true); button.setContentAreaFilled(true);
+        return button;
+    }
+}

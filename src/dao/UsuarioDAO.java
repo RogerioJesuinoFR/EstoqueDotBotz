@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import entities.Usuario;
@@ -13,34 +14,61 @@ public class UsuarioDAO {
 	private Connection conn;
 	
 	public UsuarioDAO(Connection conn) {
-		
 		this.conn = conn;
 	}
 	
 	public int cadastrar(Usuario usuario) throws SQLException {
-		
+		String sql = "INSERT INTO usuarios (nome, ra, setor, senha) VALUES (?, ?, ?, SHA2(?, 256))";
 		PreparedStatement st = null;
 		
 		try {
+			st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			
-			st = conn.prepareStatement("insert into usuarios (id_usuario, nome, ra, setor, senha, data_criacao) values (?, ?, ?, ?, ?, ?)");
+			st.setString(1, usuario.getNomeUsuario());
+			st.setString(2, usuario.getRAUsuario());
+			st.setString(3, usuario.getSetorUsuario());
+			st.setString(4, usuario.getSenhaUsuario()); // Senha em plaintext para ser hasheada pelo MySQL
 			
-			st.setString(1, usuario.getIdUsuario());
-			st.setString(2, usuario.getNomeUsuario());
-			st.setString(3, usuario.getRAUsuario());
-			st.setString(4, usuario.getSetorUsuario());
-			st.setString(5, usuario.getSenhaUsuario());
-			st.setString(6, usuario.getDataCriacaoUsuario());
-			
-			int linhasAfetadas = st.executeUpdate();			
+			int linhasAfetadas = st.executeUpdate();
 			return linhasAfetadas;
 			
 		} finally {
-			
-			BancoDados.finalizarStatement(st);
+			BancoDados.finalizarStatement(st); 
 		}
 	}
 	
+    // MÉTODO ESSENCIAL ADICIONADO PARA O LOGIN
+	public Usuario login(String ra, String senha) throws SQLException {
+	    String sql = "SELECT id_usuario, nome, ra, setor, data_criacao FROM usuarios WHERE ra = ? AND senha = SHA2(?, 256)";
+	    PreparedStatement st = null;
+	    ResultSet rs = null;
+	    Usuario usuario = null;
+	    
+	    try {
+	        st = this.conn.prepareStatement(sql);
+	        
+	        st.setString(1, ra);
+	        st.setString(2, senha);
+	        
+	        rs = st.executeQuery();
+	        
+	        if (rs.next()) {
+	            usuario = new Usuario();
+	            usuario.setIdUsuario(rs.getString("id_usuario"));
+	            usuario.setNomeUsuario(rs.getString("nome"));
+	            usuario.setRAUsuario(rs.getString("ra"));
+	            usuario.setSetorUsuario(rs.getString("setor"));
+	            usuario.setDataCriacaoUsuario(rs.getString("data_criacao"));
+                usuario.setSenhaUsuario("");
+	        }
+	        return usuario;
+	        
+	    } finally {
+	        BancoDados.finalizarStatement(st);
+	        BancoDados.finalizarResultSet(rs);
+	    }
+	}
+
 	public List<Usuario> BuscarTodos() throws SQLException {
 		
 		PreparedStatement st = null;
@@ -74,7 +102,7 @@ public class UsuarioDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar(conn);
+			BancoDados.desconectar(conn); // Chama desconectar aqui
 		}
 	}
 	
@@ -111,7 +139,7 @@ public class UsuarioDAO {
 			
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
-			BancoDados.desconectar(conn);
+			BancoDados.desconectar(conn); // Chama desconectar aqui
 		}
 	}
 	
@@ -121,6 +149,7 @@ public class UsuarioDAO {
 		
 		try {
 			
+			// OBS: Não está atualizando a senha. Se necessário, precisa de um campo extra.
 			st = conn.prepareStatement("update usuarios set nome = ?, ra = ?, setor = ?, data_criacao = ? where id_usuario = ?");
 			
 			st.setString(1, usuario.getNomeUsuario());
@@ -134,7 +163,7 @@ public class UsuarioDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar(conn);
+			BancoDados.desconectar(conn); // Chama desconectar aqui
 		}
 	}
 	
@@ -153,7 +182,7 @@ public class UsuarioDAO {
 		} finally {
 			
 			BancoDados.finalizarStatement(st);
-			BancoDados.desconectar(conn);
+			BancoDados.desconectar(conn); // Chama desconectar aqui
 		}
 	}
 }

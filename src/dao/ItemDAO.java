@@ -86,6 +86,55 @@ public class ItemDAO {
 		}
 	}
 	
+	public List<Item> buscarPorSetorEAmbos(String setorDoUsuario) throws SQLException {
+	    // O IOException foi removido daqui pois o Service vai gerenciar a conexão
+	    PreparedStatement st = null;
+	    ResultSet rs = null;
+	    
+	    String sql;
+	    if (setorDoUsuario.equals("AMBOS")) {
+	        sql = "SELECT * FROM itens ORDER BY nome";
+	    } else {
+	        sql = "SELECT * FROM itens WHERE setor = ? OR setor = 'AMBOS' ORDER BY nome";
+	    }
+	    
+	    try {
+	        // *** USA A CONEXÃO INJETADA (this.conn) ***
+	        st = this.conn.prepareStatement(sql); 
+	        
+	        if (!setorDoUsuario.equals("AMBOS")) {
+	            st.setString(1, setorDoUsuario); 
+	        }
+	        
+	        rs = st.executeQuery();
+	        
+	        List<Item> listaItens = new ArrayList<>();
+	        
+	        while (rs.next()) {
+	            Item item = new Item();
+	            item.setIdItem(rs.getString("id_item"));
+	            item.setNomeItem(rs.getString("nome"));
+	            item.setCategoria(rs.getString("id_categoria")); 
+	            item.setDescricaoItem(rs.getString("descricao"));
+	            item.setQuantidadeAtualItem(rs.getInt("quantidade_atual"));
+	            item.setQuantidadeMinimaItem(rs.getInt("quantidade_minima"));
+	            item.setUnidadeMedidaItem(rs.getString("unidade_medida"));
+	            item.setValidadeItem(rs.getString("validade"));
+	            item.setSetorItem(rs.getString("setor"));
+	            item.setDataCriacaoItem(rs.getString("data_criacao"));
+	            
+	            listaItens.add(item);
+	        }
+	        
+	        return listaItens;
+	        
+	    } finally {
+	        BancoDados.finalizarStatement(st);
+	        BancoDados.finalizarResultSet(rs);
+	        // Não fechar a conexão aqui. O Serviço fará isso.
+	    }
+	}
+	
 	public Item buscarPorNome(String nome) throws SQLException {
 		
 		PreparedStatement st = null;
