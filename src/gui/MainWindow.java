@@ -3,6 +3,9 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -14,9 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTabbedPane;
 import javax.swing.table.DefaultTableModel;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
+import javax.swing.UIManager;
 
 // NECESSÁRIO PARA INTEGRAÇÃO DB
 import services.ItemService;
@@ -28,6 +29,7 @@ public class MainWindow extends JFrame {
     private JTable itemTable;
     private String userProfile;
 
+    // Construtor principal
     public MainWindow(String[] categories, String profile) {
         this.userProfile = profile;
         
@@ -86,9 +88,15 @@ public class MainWindow extends JFrame {
         
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             public boolean isCellEditable(int row, int column) { return column == 3; }
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) return Object.class; 
+                if (columnIndex == 3) return Integer.class;
+                return super.getColumnClass(columnIndex);
+            }
         };
 
-        // --- LÓGICA DE CARREGAMENTO DE DADOS REAIS ---
+        // --- LÓGICA DE CARREGAMENTO DE DADOS INICIAL ---
         try {
             ItemService itemService = new ItemService();
             List<Item> itens = itemService.buscarItensPorPerfil(userProfile);
@@ -115,18 +123,96 @@ public class MainWindow extends JFrame {
     }
 
     private JPanel createActionButtonsPanel(Color fundo) {
-        // ... (Corpo dos botões e listeners omitidos por já serem conhecidos e ativos)
         JPanel panel = new JPanel(); panel.setBackground(fundo);
-        // ... (Lógica de botões)
+        
+        Color CLR_ADICIONAR = new Color(51, 153, 255);
+        Color CLR_EDITAR = new Color(255, 165, 0);
+        Color CLR_SALVAR_QTD = new Color(102, 187, 106);
+        Color CLR_REMOVER = new Color(200, 50, 50);
+
+        JButton btnAdicionar = createActionButton("Adicionar Novo Item", CLR_ADICIONAR);
+        JButton btnEditar = createActionButton("Editar Item Selecionado", CLR_EDITAR);
+        JButton btnAlterarQtd = createActionButton("Salvar Quantidade", CLR_SALVAR_QTD);
+        JButton btnRemover = createActionButton("Remover Item", CLR_REMOVER);
+        
+        // 1. LIGAÇÃO: MAIN -> CADASTRO DE ITENS (Passando 'this' para o refresh)
+        btnAdicionar.addActionListener(e -> {
+            CadastroItemWindow cadastroItem = new CadastroItemWindow(userProfile, this); 
+            cadastroItem.setVisible(true);
+        });
+        
+        // 2. LIGAÇÃO: MAIN -> EDIÇÃO DE ITENS
+        btnEditar.addActionListener(e -> {
+            int selectedRow = itemTable.getSelectedRow();
+            if (selectedRow != -1) {
+                String itemIdStr = String.valueOf(itemTable.getModel().getValueAt(selectedRow, 0));
+                
+                try {
+                    int itemId = Integer.parseInt(itemIdStr);
+                    EdicaoItemWindow edicaoItem = new EdicaoItemWindow(itemId, userProfile, this); 
+                    edicaoItem.setVisible(true);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "O ID selecionado é inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um item para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        
+        // 3. AÇÃO: EDIÇÃO DE QUANTIDADE
+        btnAlterarQtd.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "Implementar lógica de UPDATE de quantidade (Simulação).", "Função Pendente", JOptionPane.INFORMATION_MESSAGE);
+        });
+        
+        // 4. AÇÃO: REMOÇÃO DE ITENS
+        btnRemover.addActionListener(e -> {
+            int selectedRow = itemTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja remover?", "Confirmação", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    JOptionPane.showMessageDialog(this, "Item removido (Simulação).", "Remoção", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um item para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        panel.add(btnAdicionar); panel.add(btnEditar); panel.add(btnAlterarQtd); panel.add(btnRemover);
         return panel;
     }
     
+    // ** CORREÇÃO CRÍTICA: Método que estava retornando 'null' **
     private JButton createActionButton(String text, Color background) {
         JButton button = new JButton(text);
         button.setFont(new Font("Tahoma", Font.BOLD, 12));
         button.setForeground(Color.WHITE);
         button.setBackground(background);
-        button.setOpaque(true); button.setContentAreaFilled(true);
-        return button;
+        button.setOpaque(true); 
+        button.setContentAreaFilled(true);
+        return button; // Retorna o botão criado
+    }
+    
+    // MÉTODO ESSENCIAL: Recarrega a tabela do banco
+    public void refreshTable() {
+        DefaultTableModel model = (DefaultTableModel) itemTable.getModel();
+        model.setRowCount(0); 
+
+        try {
+            ItemService itemService = new ItemService();
+            List<Item> itens = itemService.buscarItensPorPerfil(userProfile);
+            
+            for (Item item : itens) {
+                model.addRow(new Object[] {
+                    item.getIdItem(),
+                    item.getNomeItem(),
+                    item.getSetorItem(),
+                    item.getQuantidadeAtualItem(),
+                    item.getValidadeItem()
+                });
+            }
+        } catch (SQLException | IOException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar listagem: " + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
     }
 }

@@ -1,7 +1,7 @@
 package services; 
 
 import dao.BancoDados;
-import dao.UsuarioDAO; // Você precisará corrigir UsuarioDAO para receber Connection no construtor
+import dao.UsuarioDAO;
 import entities.Usuario;
 import java.io.IOException;
 import java.sql.Connection;
@@ -14,15 +14,15 @@ public class UsuarioService {
         Connection conn = null;
         try {
             conn = BancoDados.conectar();
-            UsuarioDAO dao = new UsuarioDAO(conn); // Passa a conexão para o DAO
+            UsuarioDAO dao = new UsuarioDAO(conn); // Passa a conexão
             
-            // O DAO tentará encontrar o usuário e validar a senha
+            // Chama o método 'login' (que adicionaremos ao DAO)
             Usuario usuario = dao.login(ra, senha);
             
             return usuario;
             
         } finally {
-            BancoDados.desconectar(conn);
+            BancoDados.desconectar(conn); // O Serviço fecha a conexão
         }
     }
 
@@ -31,15 +31,20 @@ public class UsuarioService {
         Connection conn = null;
         try {
             conn = BancoDados.conectar();
-            UsuarioDAO dao = new UsuarioDAO(conn);
+            conn.setAutoCommit(false);
             
-            // Note: O método cadastrar no seu UsuarioDAO retorna int (linhas afetadas)
+            UsuarioDAO dao = new UsuarioDAO(conn);
             int linhasAfetadas = dao.cadastrar(usuario);
             
-            return linhasAfetadas > 0;
+            if (linhasAfetadas > 0) {
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
+            return false;
             
         } catch (SQLException e) {
-            // Se for um erro de chave duplicada (RA já existe)
+            if (conn != null) conn.rollback();
             throw e; 
         } finally {
             BancoDados.desconectar(conn);

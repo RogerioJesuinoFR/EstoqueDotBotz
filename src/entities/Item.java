@@ -25,7 +25,14 @@ public class Item {
 		super();
 		this.idItem = idItem;
 		this.nomeItem = nomeItem;
-		this.categoria = categoria;
+		
+        // CORREÇÃO CRÍTICA: Garante que a categoria nunca seja nula
+        if (categoria == null) {
+		    this.categoria = new Categoria();
+        } else {
+            this.categoria = categoria;
+        }
+        
 		this.descricaoItem = descricaoItem;
 		this.quantidadeAtualItem = quantidadeAtualItem;
 		this.quantidadeMinimaItem = quantidadeMinimaItem;
