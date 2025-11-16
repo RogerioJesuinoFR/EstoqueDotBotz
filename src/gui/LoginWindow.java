@@ -72,15 +72,15 @@ public class LoginWindow extends JFrame {
             UsuarioService service = new UsuarioService();
             
             try {
+                // 1. Busca o objeto Usuario completo
                 Usuario usuarioLogado = service.fazerLogin(ra, senha);
                 
                 if (usuarioLogado != null) {
-                    // Se o usuário foi cadastrado como AUTONOMOS/COMBATE, mas escolheu AMBOS, o setor dele no DB é um dos dois,
-                    // mas o sistema deve permitir acesso 'AMBOS'. Aqui, usamos o valor do DB, mas a lógica de itens lida com a permissão.
-                    String userProfile = usuarioLogado.getSetorUsuario(); 
+                    // Login BEM SUCEDIDO
                     String[] categoriasExemplo = {"Ferramentas", "Armas", "Componentes"}; 
                     
-                    MainWindow mainFrame = new MainWindow(categoriasExemplo, userProfile);
+                    // 2. **CORREÇÃO: Passa o objeto Usuario completo (não apenas o profile)**
+                    MainWindow mainFrame = new MainWindow(categoriasExemplo, usuarioLogado);
                     mainFrame.setVisible(true);
                     dispose(); 
                 } else {

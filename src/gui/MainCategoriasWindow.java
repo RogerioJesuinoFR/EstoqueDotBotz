@@ -21,19 +21,23 @@ import javax.swing.border.EmptyBorder;
 // Imports de Serviço e Entidade
 import services.CategoriaService;
 import entities.Categoria;
+import entities.Usuario; // IMPORTAR USUARIO
 
 public class MainCategoriasWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JTable categoriaTable;
-    private String userProfile;
+    private Usuario usuarioLogado; // CORREÇÃO: Armazena o objeto Usuario
+    private String userProfile; // Mantém o setor (String)
 
-    public MainCategoriasWindow(String profile) {
-        this.userProfile = profile;
+    // CONSTRUTOR CORRIGIDO: Recebe Usuario
+    public MainCategoriasWindow(Usuario usuario) {
+        this.usuarioLogado = usuario;
+        this.userProfile = usuario.getSetorUsuario();
         
         setTitle("EstoqueDotBotz - Gerenciar Categorias (Perfil: " + userProfile + ")");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // TELA CHEIA
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // CORREÇÃO: Deve ser EXIT_ON_CLOSE
+        setExtendedState(JFrame.MAXIMIZED_BOTH); 
         
         Color CLR_FUNDO_ESCURO = new Color(51, 51, 51);
         
@@ -60,7 +64,8 @@ public class MainCategoriasWindow extends JFrame {
         itemItens.setForeground(Color.BLACK);
         
         itemItens.addActionListener(e -> {
-            MainWindow mainFrame = new MainWindow(new String[]{"Ferramentas", "Armas"}, userProfile);
+            // ** CORREÇÃO CRÍTICA: Passa o objeto 'usuarioLogado' **
+            MainWindow mainFrame = new MainWindow(new String[]{"Ferramentas", "Armas"}, usuarioLogado);
             mainFrame.setVisible(true);
             dispose();
         });
@@ -88,7 +93,7 @@ public class MainCategoriasWindow extends JFrame {
             public boolean isCellEditable(int row, int column) { return false; }
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) return String.class;
+                if (columnIndex == 0) return String.class; 
                 return super.getColumnClass(columnIndex);
             }
         };
@@ -99,9 +104,7 @@ public class MainCategoriasWindow extends JFrame {
         categoriaTable.setBackground(new Color(60, 60, 60));
         categoriaTable.setForeground(Color.WHITE); 
         categoriaTable.getTableHeader().setBackground(new Color(40, 40, 40));
-        
-        // ** AJUSTE DE COR DA FONTE DO CABEÇALHO **
-        categoriaTable.getTableHeader().setForeground(Color.BLACK); // Alterado de WHITE para BLACK
+        categoriaTable.getTableHeader().setForeground(Color.BLACK);
         
         panel.add(new JScrollPane(categoriaTable), BorderLayout.CENTER);
         return panel;

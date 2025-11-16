@@ -18,21 +18,24 @@ import javax.swing.JTable;
 import javax.swing.JTabbedPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder; // Importar EmptyBorder
+import javax.swing.border.EmptyBorder;
 
 // NECESSÁRIO PARA INTEGRAÇÃO DB
 import services.ItemService;
 import entities.Item;
+import entities.Usuario; // IMPORTAR USUARIO
 
 public class MainWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JTable itemTable;
-    private String userProfile;
+    private Usuario usuarioLogado; // CORREÇÃO: Armazena o objeto Usuario
+    private String userProfile; // Mantém o setor (String) para facilitar
 
-    // Construtor principal
-    public MainWindow(String[] categories, String profile) {
-        this.userProfile = profile;
+    // **CONSTRUTOR ATUALIZADO**
+    public MainWindow(String[] categories, Usuario usuario) {
+        this.usuarioLogado = usuario;
+        this.userProfile = usuario.getSetorUsuario(); // Extrai o setor (String)
         
         setTitle("EstoqueDotBotz - Dashboard Principal (Perfil: " + userProfile + ")");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,38 +63,43 @@ public class MainWindow extends JFrame {
     
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar(); menuBar.setBackground(new Color(30, 30, 30));
+        
+        // **CORREÇÃO VISUAL: Cor da fonte do Menu (Preto -> Branco)**
         JMenu menuEstoque = new JMenu("Estoque"); menuEstoque.setForeground(new Color(0, 0, 0));
         JMenu menuSair = new JMenu("Sair"); menuSair.setForeground(new Color(0, 0, 0));
         
         // LIGAÇÃO: MAIN (ITENS) -> MAIN (CATEGORIAS)
         JMenuItem itemGerenciarCategorias = new JMenuItem("Gerenciar Categorias");
-        
-        // ** AJUSTE DE CONTRASTE DO MENU **
         itemGerenciarCategorias.setBackground(Color.WHITE);
         itemGerenciarCategorias.setForeground(Color.BLACK);
         
         itemGerenciarCategorias.addActionListener(e -> {
-            MainCategoriasWindow categoriaFrame = new MainCategoriasWindow(userProfile);
+            MainCategoriasWindow categoriaFrame = new MainCategoriasWindow(usuarioLogado); // Passa o Usuario
             categoriaFrame.setVisible(true);
             dispose();
         });
         menuEstoque.add(itemGerenciarCategorias);
         
-        // LIGAÇÃO: LOGOUT
-        JMenuItem itemSair = new JMenuItem("Logout");
-        
-        // ** AJUSTE DE CONTRASTE DO MENU **
-        itemSair.setBackground(Color.WHITE);
-        itemSair.setForeground(Color.BLACK);
-        
-        itemSair.addActionListener(e -> { new LoginWindow().setVisible(true); dispose(); });
-        menuSair.add(itemSair);
-        
-        // (Exemplo de outro item)
+        // LIGAÇÃO: MAIN (ITENS) -> MAIN (PEDIDOS)
         JMenuItem itemGerenciarPedidos = new JMenuItem("Gerenciar Pedidos");
         itemGerenciarPedidos.setBackground(Color.WHITE);
         itemGerenciarPedidos.setForeground(Color.BLACK);
+        
+        itemGerenciarPedidos.addActionListener(e -> {
+            // ** CORREÇÃO DO ERRO: Passa o objeto 'usuarioLogado' (que agora existe) **
+            MainPedidosWindow pedidosFrame = new MainPedidosWindow(usuarioLogado); 
+            pedidosFrame.setVisible(true);
+            dispose(); // Fecha a MainWindow
+        });
         menuEstoque.add(itemGerenciarPedidos);
+        
+        // LIGAÇÃO: LOGOUT
+        JMenuItem itemSairMenu = new JMenuItem("Logout"); // Renomeado para evitar conflito de nome
+        itemSairMenu.setBackground(Color.WHITE);
+        itemSairMenu.setForeground(Color.BLACK);
+        
+        itemSairMenu.addActionListener(e -> { new LoginWindow().setVisible(true); dispose(); });
+        menuSair.add(itemSairMenu);
         
         menuBar.add(menuEstoque);
         menuBar.add(menuSair);
@@ -115,6 +123,7 @@ public class MainWindow extends JFrame {
         // --- LÓGICA DE CARREGAMENTO DE DADOS INICIAL ---
         try {
             ItemService itemService = new ItemService();
+            // Usa o userProfile (String) para filtrar
             List<Item> itens = itemService.buscarItensPorPerfil(userProfile);
             
             for (Item item : itens) {
@@ -140,9 +149,6 @@ public class MainWindow extends JFrame {
     private JPanel createActionButtonsPanel(Color fundo) {
         JPanel panel = new JPanel(); 
         panel.setBackground(fundo);
-        
-        // ** AJUSTE DE MARGEM DO FOOTER (PADDING) **
-        // Adiciona 5px de preenchimento em cima/baixo, 10px nas laterais
         panel.setBorder(new EmptyBorder(5, 10, 5, 10)); 
         
         Color CLR_ADICIONAR = new Color(51, 153, 255);
