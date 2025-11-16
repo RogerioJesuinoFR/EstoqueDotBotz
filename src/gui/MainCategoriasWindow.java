@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.border.EmptyBorder; 
 
 // Imports de Serviço e Entidade
 import services.CategoriaService;
@@ -50,11 +51,14 @@ public class MainCategoriasWindow extends JFrame {
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar(); menuBar.setBackground(new Color(30, 30, 30)); 
-        JMenu menuNav = new JMenu("Navegação"); menuNav.setForeground(Color.WHITE); menuNav.setFont(new Font("Tahoma", Font.BOLD, 12));
-        JMenu menuSair = new JMenu("Sair"); menuSair.setForeground(Color.WHITE);
+        JMenu menuNav = new JMenu("Navegação"); menuNav.setForeground(new Color(0, 0, 0)); menuNav.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        JMenu menuSair = new JMenu("Sair"); menuSair.setForeground(new Color(0, 0, 0));
         
         // LIGAÇÃO: CATEGORIAS -> MAIN (ITENS)
         JMenuItem itemItens = new JMenuItem("Voltar para Itens do Estoque");
+        itemItens.setBackground(Color.WHITE);
+        itemItens.setForeground(Color.BLACK);
+        
         itemItens.addActionListener(e -> {
             MainWindow mainFrame = new MainWindow(new String[]{"Ferramentas", "Armas"}, userProfile);
             mainFrame.setVisible(true);
@@ -64,6 +68,9 @@ public class MainCategoriasWindow extends JFrame {
 
         // LIGAÇÃO: LOGOUT
         JMenuItem itemSair = new JMenuItem("Logout");
+        itemSair.setBackground(Color.WHITE);
+        itemSair.setForeground(Color.BLACK);
+        
         itemSair.addActionListener(e -> { new LoginWindow().setVisible(true); dispose(); });
         menuSair.add(itemSair);
         
@@ -81,24 +88,29 @@ public class MainCategoriasWindow extends JFrame {
             public boolean isCellEditable(int row, int column) { return false; }
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) return String.class; // ID agora é String (do DAO)
+                if (columnIndex == 0) return String.class;
                 return super.getColumnClass(columnIndex);
             }
         };
         categoriaTable = new JTable(model);
         
-        // ** CARREGA DADOS REAIS **
         refreshTable(); 
         
-        categoriaTable.setBackground(new Color(60, 60, 60)); categoriaTable.setForeground(Color.WHITE); 
-        categoriaTable.getTableHeader().setBackground(new Color(40, 40, 40)); categoriaTable.getTableHeader().setForeground(Color.WHITE);
+        categoriaTable.setBackground(new Color(60, 60, 60));
+        categoriaTable.setForeground(Color.WHITE); 
+        categoriaTable.getTableHeader().setBackground(new Color(40, 40, 40));
+        
+        // ** AJUSTE DE COR DA FONTE DO CABEÇALHO **
+        categoriaTable.getTableHeader().setForeground(Color.BLACK); // Alterado de WHITE para BLACK
         
         panel.add(new JScrollPane(categoriaTable), BorderLayout.CENTER);
         return panel;
     }
 
     private JPanel createActionButtonsPanel(Color fundo) {
-        JPanel panel = new JPanel(); panel.setBackground(fundo);
+        JPanel panel = new JPanel(); 
+        panel.setBackground(fundo);
+        panel.setBorder(new EmptyBorder(5, 10, 5, 10)); 
         
         Color CLR_ADICIONAR = new Color(51, 153, 255);
         Color CLR_EDITAR = new Color(255, 165, 0);
@@ -109,16 +121,15 @@ public class MainCategoriasWindow extends JFrame {
         JButton btnEditar = createActionButton("Editar Categoria", CLR_EDITAR, Color.WHITE, FNT_BUTTON);
         JButton btnRemover = createActionButton("Remover Categoria", CLR_REMOVER, Color.WHITE, FNT_BUTTON);
         
-        // 5. LIGAÇÃO: MAIN -> CADASTRO DE CATEGORIAS
+        // LIGAÇÃO: MAIN -> CADASTRO DE CATEGORIAS
         btnAdicionar.addActionListener(e -> {
             new CategoriaCadastroWindow(userProfile, this).setVisible(true);
         });
 
-        // 6. LIGAÇÃO: MAIN -> EDIÇÃO DE CATEGORIAS
+        // LIGAÇÃO: MAIN -> EDIÇÃO DE CATEGORIAS
         btnEditar.addActionListener(e -> {
             int selectedRow = categoriaTable.getSelectedRow();
             if (selectedRow != -1) {
-                // ID agora é String (coluna 0)
                 String categoriaId = (String) categoriaTable.getModel().getValueAt(selectedRow, 0);
                 new CategoriaEdicaoWindow(categoriaId, userProfile, this).setVisible(true);
             } else {
@@ -126,25 +137,39 @@ public class MainCategoriasWindow extends JFrame {
             }
         });
 
-        // 7. AÇÃO: REMOÇÃO DE CATEGORIAS
+        // AÇÃO: REMOÇÃO DE CATEGORIAS
         btnRemover.addActionListener(e -> {
             int selectedRow = categoriaTable.getSelectedRow();
             if (selectedRow != -1) {
                 String categoriaId = (String) categoriaTable.getModel().getValueAt(selectedRow, 0);
                 
-                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja remover a Categoria ID: " + categoriaId + "?", "Confirmação", JOptionPane.YES_NO_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(this, 
+                    "Tem certeza que deseja remover a Categoria ID: " + categoriaId + "?", 
+                    "Confirmação de Remoção", 
+                    JOptionPane.YES_NO_OPTION);
                 
                 if (confirm == JOptionPane.YES_OPTION) {
                     try {
                         CategoriaService service = new CategoriaService();
                         if (service.excluirCategoria(categoriaId)) {
                             JOptionPane.showMessageDialog(this, "Categoria removida com sucesso!");
-                            refreshTable(); // Atualiza a tabela
+                            refreshTable(); 
                         } else {
                             JOptionPane.showMessageDialog(this, "Falha ao remover categoria.", "Erro", JOptionPane.ERROR_MESSAGE);
                         }
-                    } catch (SQLException | IOException ex) {
-                        JOptionPane.showMessageDialog(this, "Erro de DB: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
+                    } catch (SQLException ex) {
+                        if (ex.getSQLState().equals("23000") || ex.getMessage().contains("foreign key constraint")) {
+                             JOptionPane.showMessageDialog(this, 
+                                "Erro: Esta categoria não pode ser removida pois possui itens vinculados a ela.", 
+                                "Erro de Integridade", 
+                                JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Erro de DB: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
+                            ex.printStackTrace();
+                        }
+                    } catch (IOException ex) {
+                         JOptionPane.showMessageDialog(this, "Erro de conexão: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
+                         ex.printStackTrace();
                     }
                 }
             } else {
@@ -169,7 +194,7 @@ public class MainCategoriasWindow extends JFrame {
                 model.addRow(new Object[] {
                     cat.getIdCategoria(),
                     cat.getNomeCategoria(),
-                    cat.getSetor() // Exibe o setor
+                    cat.getSetor()
                 });
             }
         } catch (SQLException | IOException e) {

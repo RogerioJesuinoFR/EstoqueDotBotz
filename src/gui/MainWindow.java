@@ -18,6 +18,7 @@ import javax.swing.JTable;
 import javax.swing.JTabbedPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder; // Importar EmptyBorder
 
 // NECESSÁRIO PARA INTEGRAÇÃO DB
 import services.ItemService;
@@ -59,11 +60,16 @@ public class MainWindow extends JFrame {
     
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar(); menuBar.setBackground(new Color(30, 30, 30));
-        JMenu menuEstoque = new JMenu("Estoque"); menuEstoque.setForeground(Color.WHITE);
-        JMenu menuSair = new JMenu("Sair"); menuSair.setForeground(Color.WHITE);
+        JMenu menuEstoque = new JMenu("Estoque"); menuEstoque.setForeground(new Color(0, 0, 0));
+        JMenu menuSair = new JMenu("Sair"); menuSair.setForeground(new Color(0, 0, 0));
         
         // LIGAÇÃO: MAIN (ITENS) -> MAIN (CATEGORIAS)
         JMenuItem itemGerenciarCategorias = new JMenuItem("Gerenciar Categorias");
+        
+        // ** AJUSTE DE CONTRASTE DO MENU **
+        itemGerenciarCategorias.setBackground(Color.WHITE);
+        itemGerenciarCategorias.setForeground(Color.BLACK);
+        
         itemGerenciarCategorias.addActionListener(e -> {
             MainCategoriasWindow categoriaFrame = new MainCategoriasWindow(userProfile);
             categoriaFrame.setVisible(true);
@@ -73,10 +79,20 @@ public class MainWindow extends JFrame {
         
         // LIGAÇÃO: LOGOUT
         JMenuItem itemSair = new JMenuItem("Logout");
+        
+        // ** AJUSTE DE CONTRASTE DO MENU **
+        itemSair.setBackground(Color.WHITE);
+        itemSair.setForeground(Color.BLACK);
+        
         itemSair.addActionListener(e -> { new LoginWindow().setVisible(true); dispose(); });
         menuSair.add(itemSair);
         
-        menuEstoque.add(new JMenuItem("Gerenciar Pedidos"));
+        // (Exemplo de outro item)
+        JMenuItem itemGerenciarPedidos = new JMenuItem("Gerenciar Pedidos");
+        itemGerenciarPedidos.setBackground(Color.WHITE);
+        itemGerenciarPedidos.setForeground(Color.BLACK);
+        menuEstoque.add(itemGerenciarPedidos);
+        
         menuBar.add(menuEstoque);
         menuBar.add(menuSair);
         return menuBar;
@@ -91,7 +107,7 @@ public class MainWindow extends JFrame {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) return Object.class; 
-                if (columnIndex == 3) return Integer.class; 
+                if (columnIndex == 3) return Integer.class;
                 return super.getColumnClass(columnIndex);
             }
         };
@@ -100,6 +116,7 @@ public class MainWindow extends JFrame {
         try {
             ItemService itemService = new ItemService();
             List<Item> itens = itemService.buscarItensPorPerfil(userProfile);
+            
             for (Item item : itens) {
                 model.addRow(new Object[] {
                     item.getIdItem(),
@@ -121,7 +138,12 @@ public class MainWindow extends JFrame {
     }
 
     private JPanel createActionButtonsPanel(Color fundo) {
-        JPanel panel = new JPanel(); panel.setBackground(fundo);
+        JPanel panel = new JPanel(); 
+        panel.setBackground(fundo);
+        
+        // ** AJUSTE DE MARGEM DO FOOTER (PADDING) **
+        // Adiciona 5px de preenchimento em cima/baixo, 10px nas laterais
+        panel.setBorder(new EmptyBorder(5, 10, 5, 10)); 
         
         Color CLR_ADICIONAR = new Color(51, 153, 255);
         Color CLR_EDITAR = new Color(255, 165, 0);
@@ -185,29 +207,23 @@ public class MainWindow extends JFrame {
             }
         });
         
-        // ** 4. AÇÃO: REMOÇÃO DE ITENS (IMPLEMENTAÇÃO COMPLETA) **
+        // 4. AÇÃO: REMOÇÃO DE ITENS
         btnRemover.addActionListener(e -> {
             int selectedRow = itemTable.getSelectedRow();
             if (selectedRow != -1) {
                 String itemId = String.valueOf(itemTable.getModel().getValueAt(selectedRow, 0));
-                
-                int confirm = JOptionPane.showConfirmDialog(this, 
-                    "Tem certeza que deseja remover o Item ID: " + itemId + "?", 
-                    "Confirmação de Remoção", 
-                    JOptionPane.YES_NO_OPTION);
-                
+                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja remover o Item ID: " + itemId + "?", "Confirmação", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     try {
                         ItemService service = new ItemService();
-                        if (service.removerItem(itemId)) {
+                        if(service.removerItem(itemId)) {
                             JOptionPane.showMessageDialog(this, "Item removido com sucesso!", "Remoção", JOptionPane.INFORMATION_MESSAGE);
-                            refreshTable(); // Atualiza a tabela
+                            refreshTable();
                         } else {
-                            JOptionPane.showMessageDialog(this, "Nenhum item foi removido (ID não encontrado).", "Erro", JOptionPane.ERROR_MESSAGE);
+                             JOptionPane.showMessageDialog(this, "Falha ao remover item.", "Erro", JOptionPane.ERROR_MESSAGE);
                         }
                     } catch (SQLException | IOException ex) {
                          JOptionPane.showMessageDialog(this, "Erro de DB: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
-                         ex.printStackTrace();
                     }
                 }
             } else {
