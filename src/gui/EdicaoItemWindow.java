@@ -48,7 +48,6 @@ public class EdicaoItemWindow extends JFrame {
         setLocationRelativeTo(null);
         
         // --- Setup e Carregamento (ANTES DE INICIALIZAR COMPONENTES) ---
-        // Tratamento de exceção no construtor
         try {
             if (!carregarDadosExternos()) {
                 JOptionPane.showMessageDialog(this, "Item ID " + itemId + " não encontrado.", "Erro de Carga", JOptionPane.ERROR_MESSAGE);
@@ -74,25 +73,21 @@ public class EdicaoItemWindow extends JFrame {
 
         // --- INICIALIZAÇÃO E POSICIONAMENTO DOS COMPONENTES VISUAIS ---
         
-        // Nome do Item
         JLabel lblNomeItem = new JLabel("Nome do Item:"); lblNomeItem.setFont(FNT_PADRAO); lblNomeItem.setForeground(CLR_BRANCO_CLARO); lblNomeItem.setBounds(50, yOffset, 150, 20); getContentPane().add(lblNomeItem);
         txtNomeItem = new JTextField(); txtNomeItem.setBackground(CLR_BRANCO_CLARO); txtNomeItem.setBounds(250, yOffset, 200, 25); getContentPane().add(txtNomeItem);
         yOffset += 40;
 
-        // Categoria (CRÍTICO: Inicializa e Popula o modelo)
         JLabel lblCategoria = new JLabel("Categoria:"); lblCategoria.setFont(FNT_PADRAO); lblCategoria.setForeground(CLR_BRANCO_CLARO); lblCategoria.setBounds(50, yOffset, 150, 20); getContentPane().add(lblCategoria);
         cmbCategoria = new JComboBox<>(); 
         popularComboBoxCategorias(); // Popula o JComboBox
         cmbCategoria.setBackground(CLR_BRANCO_CLARO); cmbCategoria.setBounds(250, yOffset, 200, 25); getContentPane().add(cmbCategoria);
         yOffset += 40;
         
-        // Descrição
         JLabel lblDescricao = new JLabel("Descrição (Opcional):"); lblDescricao.setFont(FNT_PADRAO); lblDescricao.setForeground(CLR_BRANCO_CLARO); lblDescricao.setBounds(50, yOffset, 200, 20); getContentPane().add(lblDescricao);
         txtDescricao = new JTextArea(); txtDescricao.setWrapStyleWord(true); txtDescricao.setLineWrap(true); txtDescricao.setBackground(CLR_BRANCO_CLARO);
         JScrollPane scrollDescricao = new JScrollPane(txtDescricao); scrollDescricao.setBounds(50, yOffset + 25, 400, 80); getContentPane().add(scrollDescricao);
         yOffset += 115;
 
-        // Qtd Atual e Mínima
         JLabel lblQtdAtual = new JLabel("Quantidade Atual:"); lblQtdAtual.setFont(FNT_PADRAO); lblQtdAtual.setForeground(CLR_BRANCO_CLARO); lblQtdAtual.setBounds(50, yOffset, 150, 20); getContentPane().add(lblQtdAtual);
         spinQtdAtual = new JSpinner(new SpinnerNumberModel(0, 0, 10000, 1)); spinQtdAtual.setBounds(250, yOffset, 60, 25); getContentPane().add(spinQtdAtual);
         yOffset += 40;
@@ -101,17 +96,14 @@ public class EdicaoItemWindow extends JFrame {
         spinQtdMinima = new JSpinner(new SpinnerNumberModel(0, 0, 10000, 1)); spinQtdMinima.setBounds(250, yOffset, 60, 25); getContentPane().add(spinQtdMinima);
         yOffset += 40;
 
-        // Unidade de Medida
         JLabel lblUnidadeMedida = new JLabel("Unidade de Medida:"); lblUnidadeMedida.setFont(FNT_PADRAO); lblUnidadeMedida.setForeground(CLR_BRANCO_CLARO); lblUnidadeMedida.setBounds(50, yOffset, 150, 20); getContentPane().add(lblUnidadeMedida);
         txtUnidadeMedida = new JTextField(); txtUnidadeMedida.setBackground(CLR_BRANCO_CLARO); txtUnidadeMedida.setBounds(250, yOffset, 200, 25); getContentPane().add(txtUnidadeMedida);
         yOffset += 40;
 
-        // Data de Validade
         JLabel lblDataValidade = new JLabel("Data de Validade (AAAA-MM-DD):"); lblDataValidade.setFont(FNT_PADRAO); lblDataValidade.setForeground(CLR_BRANCO_CLARO); lblDataValidade.setBounds(50, yOffset, 200, 20); getContentPane().add(lblDataValidade);
         txtDataValidade = new JTextField(); txtDataValidade.setBackground(CLR_BRANCO_CLARO); txtDataValidade.setBounds(250, yOffset, 200, 25); getContentPane().add(txtDataValidade);
         yOffset += 40;
 
-        // Setor (Lógica Condicional)
         JLabel lblSetor = new JLabel("Setor:"); lblSetor.setFont(FNT_PADRAO); lblSetor.setForeground(CLR_BRANCO_CLARO); lblSetor.setBounds(50, yOffset, 150, 20); getContentPane().add(lblSetor);
         cmbSetor = new JComboBox<>(); cmbSetor.setBackground(CLR_BRANCO_CLARO); cmbSetor.setBounds(250, yOffset, 200, 25); setupSetorComboBox(this.userProfile); getContentPane().add(cmbSetor);
         yOffset += 60;
@@ -171,10 +163,10 @@ public class EdicaoItemWindow extends JFrame {
         cmbCategoria.setModel(model);
     }
     
+    // ** CORRIGIDO: POPULAÇÃO COMPLETA DOS CAMPOS **
     private void populaCamposDaInterface() {
         if (itemOriginal == null) return;
         
-        // --- 1. POPULAÇÃO DE CAMPOS DE TEXTO E SPINNERS ---
         txtNomeItem.setText(itemOriginal.getNomeItem());
         txtUnidadeMedida.setText(itemOriginal.getUnidadeMedidaItem());
         
@@ -186,7 +178,6 @@ public class EdicaoItemWindow extends JFrame {
         spinQtdAtual.setValue(itemOriginal.getQuantidadeAtualItem());
         spinQtdMinima.setValue(itemOriginal.getQuantidadeMinimaItem());
         
-        // --- 2. POPULAÇÃO DO COMBOBOX DE CATEGORIA (CRÍTICO) ---
         String idCategoria = itemOriginal.getCategoria();
         String nomeCategoria = categoriaIdToNameMap.get(idCategoria); 
         
@@ -194,12 +185,12 @@ public class EdicaoItemWindow extends JFrame {
             cmbCategoria.setSelectedItem(nomeCategoria);
         }
         
-        // --- 3. POPULAÇÃO DO SETOR ---
         if (cmbSetor != null) {
             cmbSetor.setSelectedItem(itemOriginal.getSetorItem());
         }
     }
 
+    // ** CORRIGIDO: COLETA COMPLETA DOS DADOS PARA SALVAR **
     private void salvarAlteracoes() {
         if (itemOriginal == null) return;
 
@@ -221,8 +212,8 @@ public class EdicaoItemWindow extends JFrame {
              return;
         }
 
-        // 2. Cria a Entidade Atualizada (Usando o construtor vazio)
-        Item itemAtualizado = new Item(); // CONSTRUTOR VAZIO (garante que 'categoria' não é nulo)
+        // 2. Cria a Entidade Atualizada
+        Item itemAtualizado = new Item();
         
         itemAtualizado.setIdItem(itemOriginal.getIdItem()); // ID CHAVE
         itemAtualizado.setNomeItem(nome);
@@ -232,9 +223,9 @@ public class EdicaoItemWindow extends JFrame {
         itemAtualizado.setUnidadeMedidaItem(unidade);
         itemAtualizado.setValidadeItem(validade);
         itemAtualizado.setSetorItem(setor);
-        itemAtualizado.setDataCriacaoItem(itemOriginal.getDataCriacaoItem()); 
+        itemAtualizado.setDataCriacaoItem(itemOriginal.getDataCriacaoItem()); // Mantém a data original
         
-        itemAtualizado.setCategoria(idCategoria); // Agora esta chamada é segura
+        itemAtualizado.setCategoria(idCategoria); // Seta o ID da Categoria
         
         // 3. Serviço de Atualização
         ItemService service = new ItemService();

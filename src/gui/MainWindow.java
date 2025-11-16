@@ -91,7 +91,7 @@ public class MainWindow extends JFrame {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) return Object.class; 
-                if (columnIndex == 3) return Integer.class;
+                if (columnIndex == 3) return Integer.class; 
                 return super.getColumnClass(columnIndex);
             }
         };
@@ -100,7 +100,6 @@ public class MainWindow extends JFrame {
         try {
             ItemService itemService = new ItemService();
             List<Item> itens = itemService.buscarItensPorPerfil(userProfile);
-            
             for (Item item : itens) {
                 model.addRow(new Object[] {
                     item.getIdItem(),
@@ -110,7 +109,6 @@ public class MainWindow extends JFrame {
                     item.getValidadeItem() 
                 });
             }
-            
         } catch (SQLException | IOException e) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar itens do estoque: " + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
@@ -135,7 +133,7 @@ public class MainWindow extends JFrame {
         JButton btnAlterarQtd = createActionButton("Salvar Quantidade", CLR_SALVAR_QTD);
         JButton btnRemover = createActionButton("Remover Item", CLR_REMOVER);
         
-        // 1. LIGAÇÃO: MAIN -> CADASTRO DE ITENS (Passando 'this' para o refresh)
+        // 1. LIGAÇÃO: MAIN -> CADASTRO DE ITENS
         btnAdicionar.addActionListener(e -> {
             CadastroItemWindow cadastroItem = new CadastroItemWindow(userProfile, this); 
             cadastroItem.setVisible(true);
@@ -146,7 +144,6 @@ public class MainWindow extends JFrame {
             int selectedRow = itemTable.getSelectedRow();
             if (selectedRow != -1) {
                 String itemIdStr = String.valueOf(itemTable.getModel().getValueAt(selectedRow, 0));
-                
                 try {
                     int itemId = Integer.parseInt(itemIdStr);
                     EdicaoItemWindow edicaoItem = new EdicaoItemWindow(itemId, userProfile, this); 
@@ -161,16 +158,57 @@ public class MainWindow extends JFrame {
         
         // 3. AÇÃO: EDIÇÃO DE QUANTIDADE
         btnAlterarQtd.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Implementar lógica de UPDATE de quantidade (Simulação).", "Função Pendente", JOptionPane.INFORMATION_MESSAGE);
+            if (itemTable.isEditing()) {
+                itemTable.getCellEditor().stopCellEditing();
+            }
+            int selectedRow = itemTable.getSelectedRow();
+            if (selectedRow != -1) {
+                try {
+                    String itemId = String.valueOf(itemTable.getModel().getValueAt(selectedRow, 0));
+                    int novaQuantidade = (Integer) itemTable.getModel().getValueAt(selectedRow, 3);
+
+                    ItemService service = new ItemService();
+                    if (service.atualizarQuantidadeItem(itemId, novaQuantidade)) {
+                        JOptionPane.showMessageDialog(this, "Quantidade atualizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                        refreshTable(); 
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Falha ao atualizar a quantidade no banco.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (ClassCastException cce) {
+                     JOptionPane.showMessageDialog(this, "Erro: A quantidade inserida não é um número válido.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                } catch (SQLException | IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Erro de DB: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um item na tabela e altere a quantidade na célula antes de salvar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
         });
         
-        // 4. AÇÃO: REMOÇÃO DE ITENS
+        // ** 4. AÇÃO: REMOÇÃO DE ITENS (IMPLEMENTAÇÃO COMPLETA) **
         btnRemover.addActionListener(e -> {
             int selectedRow = itemTable.getSelectedRow();
             if (selectedRow != -1) {
-                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja remover?", "Confirmação", JOptionPane.YES_NO_OPTION);
+                String itemId = String.valueOf(itemTable.getModel().getValueAt(selectedRow, 0));
+                
+                int confirm = JOptionPane.showConfirmDialog(this, 
+                    "Tem certeza que deseja remover o Item ID: " + itemId + "?", 
+                    "Confirmação de Remoção", 
+                    JOptionPane.YES_NO_OPTION);
+                
                 if (confirm == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(this, "Item removido (Simulação).", "Remoção", JOptionPane.INFORMATION_MESSAGE);
+                    try {
+                        ItemService service = new ItemService();
+                        if (service.removerItem(itemId)) {
+                            JOptionPane.showMessageDialog(this, "Item removido com sucesso!", "Remoção", JOptionPane.INFORMATION_MESSAGE);
+                            refreshTable(); // Atualiza a tabela
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Nenhum item foi removido (ID não encontrado).", "Erro", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (SQLException | IOException ex) {
+                         JOptionPane.showMessageDialog(this, "Erro de DB: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
+                         ex.printStackTrace();
+                    }
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione um item para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -181,7 +219,6 @@ public class MainWindow extends JFrame {
         return panel;
     }
     
-    // ** CORREÇÃO CRÍTICA: Método que estava retornando 'null' **
     private JButton createActionButton(String text, Color background) {
         JButton button = new JButton(text);
         button.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -189,7 +226,7 @@ public class MainWindow extends JFrame {
         button.setBackground(background);
         button.setOpaque(true); 
         button.setContentAreaFilled(true);
-        return button; // Retorna o botão criado
+        return button;
     }
     
     // MÉTODO ESSENCIAL: Recarrega a tabela do banco
