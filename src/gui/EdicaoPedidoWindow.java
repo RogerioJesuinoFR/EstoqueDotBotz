@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.DefaultCellEditor;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -77,6 +79,8 @@ public class EdicaoPedidoWindow extends JFrame {
         spinQuantidade = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
         JButton btnAdicionarItem = new JButton("Adicionar Item");
         
+        // ** CORREÇÃO: Botão "Remover Item" global removido deste painel **
+        
         painelAdicionar.add(new JLabel("Item:"));
         painelAdicionar.add(cmbItens);
         painelAdicionar.add(new JLabel("Qtd:"));
@@ -85,21 +89,26 @@ public class EdicaoPedidoWindow extends JFrame {
         
         getContentPane().add(painelAdicionar, BorderLayout.CENTER);
 
-        // --- Painel Inferior (CORREÇÃO DE LAYOUT) ---
+        // --- Painel Inferior (Layout Corrigido) ---
         JPanel southPanel = new JPanel(new BorderLayout());
         
-        String[] colunasItens = {"ID", "Nome do Item", "Quantidade"};
-        tableModel = new DefaultTableModel(colunasItens, 0);
+        String[] colunasItens = {"ID", "Nome do Item", "Quantidade", "Remover"};
+        tableModel = new DefaultTableModel(colunasItens, 0) {
+            public boolean isCellEditable(int row, int column) { 
+                return column == 3; 
+            }
+        };
         tabelaItensAdicionados = new JTable(tableModel);
         
-        JScrollPane scrollPane = new JScrollPane(tabelaItensAdicionados);
+        tabelaItensAdicionados.getColumn("Remover").setCellRenderer(new ButtonRenderer());
+        tabelaItensAdicionados.getColumn("Remover").setCellEditor(
+            new ButtonEditor(new JCheckBox(), "Remover")
+        );
         
-        // ** CORREÇÃO DE LAYOUT: Define uma altura preferida para a tabela **
+        JScrollPane scrollPane = new JScrollPane(tabelaItensAdicionados);
         scrollPane.setPreferredSize(new Dimension(0, 150)); 
-
         southPanel.add(scrollPane, BorderLayout.CENTER);
         
-        // --- Botão Salvar Pedido ---
         JButton btnSalvarPedido = new JButton("Salvar Alterações");
         btnSalvarPedido.setBackground(new Color(255, 165, 0)); // Cor Laranja
         btnSalvarPedido.setForeground(Color.WHITE);
@@ -119,8 +128,10 @@ public class EdicaoPedidoWindow extends JFrame {
                 tableModel.addRow(new Object[]{
                     itemSelecionado.getIdItem(),
                     itemSelecionado.getNomeItem(),
-                    quantidade
+                    quantidade,
+                    "Remover"
                 });
+                ((DefaultComboBoxModel<Item>)cmbItens.getModel()).removeElement(itemSelecionado);
             }
         });
         
@@ -151,13 +162,21 @@ public class EdicaoPedidoWindow extends JFrame {
         txtDataPrevisao.setText(pedidoOriginal.getDataPrevisaoPedido());
         cmbStatus.setSelectedItem(pedidoOriginal.getStatusPedido());
         
-        // Popula a tabela com os itens existentes
         for (PedidoItem item : pedidoOriginal.getItensDoPedido()) {
              tableModel.addRow(new Object[]{
                 item.getIdItem(),
                 item.getNomeItem(),
-                item.getQuantidadeComprada()
+                item.getQuantidadeComprada(),
+                "Remover"
             });
+             
+            for (int i = 0; i < cmbItens.getItemCount(); i++) {
+                Item itemDisponivel = cmbItens.getItemAt(i);
+                if (itemDisponivel.getIdItem().equals(item.getIdItem())) {
+                    cmbItens.removeItemAt(i);
+                    break;
+                }
+            }
         }
     }
 
@@ -178,7 +197,6 @@ public class EdicaoPedidoWindow extends JFrame {
         }
         cmbItens.setModel(model);
         
-        // Customiza como o item aparece no ComboBox (mostra o nome)
         cmbItens.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -197,12 +215,10 @@ public class EdicaoPedidoWindow extends JFrame {
             return;
         }
         
-        // 1. Atualiza o objeto Pedido
         pedidoOriginal.setDataSolicitacaoPedido(txtDataSolicitacao.getText());
         pedidoOriginal.setDataPrevisaoPedido(txtDataPrevisao.getText());
         pedidoOriginal.setStatusPedido((String) cmbStatus.getSelectedItem());
         
-        // 2. Limpa os itens antigos e adiciona os novos da tabela
         pedidoOriginal.getItensDoPedido().clear();
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             String idItem = (String) tableModel.getValueAt(i, 0);
@@ -211,7 +227,6 @@ public class EdicaoPedidoWindow extends JFrame {
             pedidoOriginal.adicionarItem(new PedidoItem(idItem, nomeItem, quantidade));
         }
         
-        // 3. Chamar o serviço de atualização
         PedidoService service = new PedidoService();
         try {
             if (service.atualizarPedido(pedidoOriginal)) {
@@ -224,6 +239,70 @@ public class EdicaoPedidoWindow extends JFrame {
         } catch (SQLException | IOException e) {
             JOptionPane.showMessageDialog(this, "Erro de DB: " + e.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+        }
+    }
+
+    // --- CLASSES INTERNAS PARA O BOTÃO NA TABELA ---
+
+    class ButtonRenderer extends JButton implements TableCellRenderer {
+        public ButtonRenderer() {
+            setOpaque(true);
+            setForeground(Color.WHITE);
+            setBackground(new Color(200, 50, 50));
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            setText((value == null) ? "" : value.toString());
+            return this;
+        }
+    }
+
+    class ButtonEditor extends DefaultCellEditor {
+        protected JButton button;
+        private String label;
+        private boolean isPushed;
+
+        public ButtonEditor(JCheckBox checkBox, String text) {
+            super(checkBox);
+            button = new JButton();
+            button.setOpaque(true);
+            button.setForeground(Color.WHITE);
+            button.setBackground(new Color(200, 50, 50));
+            button.setText(text);
+            button.addActionListener(e -> fireEditingStopped());
+        }
+
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int column) {
+            label = (value == null) ? "" : value.toString();
+            button.setText(label);
+            isPushed = true;
+            return button;
+        }
+
+        public Object getCellEditorValue() {
+            if (isPushed) {
+                int selectedRow = tabelaItensAdicionados.getEditingRow();
+                String idItem = (String) tableModel.getValueAt(selectedRow, 0);
+                
+                // REQUISITO 2: Adiciona o item de volta ao ComboBox
+                for (Item item : itensDisponiveis) {
+                    if (item.getIdItem().equals(idItem)) {
+                        ((DefaultComboBoxModel<Item>)cmbItens.getModel()).addElement(item);
+                        break;
+                    }
+                }
+                
+                tableModel.removeRow(selectedRow);
+            }
+            isPushed = false;
+            return label;
+        }
+
+        public boolean stopCellEditing() {
+            isPushed = false;
+            return super.stopCellEditing();
         }
     }
 }
