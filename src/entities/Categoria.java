@@ -1,23 +1,23 @@
 package entities;
 
-
 public class Categoria {
 	private String idCategoria;
 	private String nomeCategoria;
 	private String descricaoCategoria;
 	private String dataCriacaoCategoria;
+    private String setor; // CAMPO ADICIONADO
 	
-
 	public Categoria() {
 		
 	}
 	
-	public Categoria(String idCategoria, String nomeCategoria, String descricaoCategoria, String dataCriacaoCategoria) {
+	public Categoria(String idCategoria, String nomeCategoria, String descricaoCategoria, String dataCriacaoCategoria, String setor) {
 		super();
 		this.idCategoria = idCategoria;
 		this.nomeCategoria = nomeCategoria;
 		this.descricaoCategoria = descricaoCategoria;
 		this.dataCriacaoCategoria = dataCriacaoCategoria;
+        this.setor = setor;
 	}
 
 	public String getIdCategoria() {
@@ -51,4 +51,13 @@ public class Categoria {
 	public void setDataCriacaoCategoria(String dataCriacaoCategoria) {
 		this.dataCriacaoCategoria = dataCriacaoCategoria;
 	}
+    
+    // GETTER E SETTER PARA SETOR
+    public String getSetor() {
+        return setor;
+    }
+
+    public void setSetor(String setor) {
+        this.setor = setor;
+    }
 }

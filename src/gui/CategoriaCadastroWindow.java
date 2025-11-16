@@ -2,14 +2,25 @@ package gui;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.JScrollPane;
 import javax.swing.DefaultComboBoxModel;
+import java.io.IOException;
+import java.sql.SQLException;
+import entities.Categoria;
+import services.CategoriaService;
 
 public class CategoriaCadastroWindow extends JFrame {
     private static final long serialVersionUID = 1L;
     private JTextArea txtDescricao;
+    private JTextField txtNomeCategoria;
+    private JComboBox<String> cmbSetor;
+    private MainCategoriasWindow parentWindow; // Referência para refresh
 
-    public CategoriaCadastroWindow(String profile) {
-        setTitle("Cadastro de Nova Categoria (Perfil: " + profile + ")");
+    public CategoriaCadastroWindow(String profile, MainCategoriasWindow parent) {
+        this.parentWindow = parent;
+        String userProfile = profile.toUpperCase();
+        
+        setTitle("Cadastro de Nova Categoria (Perfil: " + userProfile + ")");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(450, 400); 
         setLocationRelativeTo(null);
@@ -24,18 +35,23 @@ public class CategoriaCadastroWindow extends JFrame {
         
         int yOffset = 30;
         
-        // --- Componentes ---
         // Nome da Categoria
         JLabel lblNomeCategoria = new JLabel("Nome da Categoria:"); lblNomeCategoria.setFont(FNT_PADRAO); lblNomeCategoria.setForeground(CLR_BRANCO_CLARO); lblNomeCategoria.setBounds(30, yOffset, 150, 20); getContentPane().add(lblNomeCategoria);
-        JTextField txtNomeCategoria = new JTextField(); txtNomeCategoria.setBackground(CLR_BRANCO_CLARO); txtNomeCategoria.setBounds(190, yOffset, 220, 25); getContentPane().add(txtNomeCategoria);
+        txtNomeCategoria = new JTextField(); txtNomeCategoria.setBackground(CLR_BRANCO_CLARO); txtNomeCategoria.setBounds(190, yOffset, 220, 25); getContentPane().add(txtNomeCategoria);
         yOffset += 40;
 
         // Setor de Acesso (Condicional)
         JLabel lblSetor = new JLabel("Setor de Acesso:"); lblSetor.setFont(FNT_PADRAO); lblSetor.setForeground(CLR_BRANCO_CLARO); lblSetor.setBounds(30, yOffset, 150, 20); getContentPane().add(lblSetor);
-        JComboBox<String> cmbSetor = new JComboBox<>(); cmbSetor.setBackground(CLR_BRANCO_CLARO); cmbSetor.setBounds(190, yOffset, 220, 25);
+        cmbSetor = new JComboBox<>(); cmbSetor.setBackground(CLR_BRANCO_CLARO); cmbSetor.setBounds(190, yOffset, 220, 25);
         
-        if ("Ambos".equals(profile)) { cmbSetor.setModel(new DefaultComboBoxModel<>(new String[] {"Autônomos", "Combate", "Ambos"})); cmbSetor.setEnabled(true); } 
-        else { cmbSetor.setModel(new DefaultComboBoxModel<>(new String[] {profile})); cmbSetor.setEnabled(false); }
+        // Lógica de Setor (ENUMS MAIÚSCULOS)
+        if ("AMBOS".equals(userProfile)) { 
+            cmbSetor.setModel(new DefaultComboBoxModel<>(new String[] {"AUTONOMOS", "COMBATE", "AMBOS"}));
+            cmbSetor.setEnabled(true); 
+        } else { 
+            cmbSetor.setModel(new DefaultComboBoxModel<>(new String[] {userProfile})); // AUTONOMOS ou COMBATE
+            cmbSetor.setEnabled(false); 
+        }
         getContentPane().add(cmbSetor);
         yOffset += 50;
 
@@ -49,10 +65,39 @@ public class CategoriaCadastroWindow extends JFrame {
         JButton btnCadastrar = new JButton("Salvar Nova Categoria");
         btnCadastrar.setFont(FNT_PADRAO); btnCadastrar.setForeground(Color.WHITE); btnCadastrar.setBackground(CLR_AZUL_CADASTRO); btnCadastrar.setOpaque(true); btnCadastrar.setContentAreaFilled(true);
         btnCadastrar.setBounds(30, yOffset, 380, 35);
+        
+        // AÇÃO: PERSISTÊNCIA E REFRESH
         btnCadastrar.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Categoria cadastrada com sucesso (Simulação).", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            dispose();
+            efetuarCadastroCategoria();
         });
         getContentPane().add(btnCadastrar);
+    }
+    
+    private void efetuarCadastroCategoria() {
+        String nome = txtNomeCategoria.getText().trim();
+        String descricao = txtDescricao.getText().trim();
+        String setor = (String) cmbSetor.getSelectedItem();
+        
+        if (nome.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O nome da categoria é obrigatório.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // ID e Data de Criação são nulos (gerados pelo DB)
+        Categoria novaCategoria = new Categoria(null, nome, descricao, null, setor);
+        
+        CategoriaService service = new CategoriaService();
+        try {
+            if (service.cadastrarCategoria(novaCategoria)) {
+                JOptionPane.showMessageDialog(this, "Categoria cadastrada com sucesso!");
+                parentWindow.refreshTable(); // Atualiza a tabela principal
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Falha ao cadastrar categoria.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException | IOException ex) {
+            JOptionPane.showMessageDialog(this, "Erro de DB: " + ex.getMessage(), "Erro Crítico", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
     }
 }
